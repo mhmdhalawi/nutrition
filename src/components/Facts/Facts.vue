@@ -1,25 +1,41 @@
 <script lang="ts" setup>
+import { computed } from "vue";
 import response from "@/data/response.json";
-import { useI18n } from "vue-i18n-composable";
-import { ref, computed } from "vue";
-import type { LanguageMapping } from "@/types/language";
+import useLanguageKey from "@/composables/use-language-key";
+import Fact from "./Fact.vue";
 
-const languageMapping = ref<LanguageMapping>({
-  en: "name",
-  ar: "name_ar",
-  es: "name_es",
-  fr: "name_fr",
-});
+import type { Serving, Key } from "@/types/facts";
 
-const key = computed(() => languageMapping.value[locale.value]);
-
-const { locale } = useI18n();
+const { key } = useLanguageKey();
 
 const amounts = computed(() => response.label.amounts);
-const dailyValues = computed(() => response.label.daily_value);
-const servings = computed(() => response.label.serving);
+const dailyValues = computed(() => response.label.daily_value as any);
 
-console.log(servings.value);
+const servings = computed<Serving[]>(() => {
+  return Object.keys(response.label.serving)
+    .map((key) => response.label.serving[key as Key])
+    .filter((serving) => serving.enabled === 1 && serving.name !== "Calories")
+    .sort((a, b) => {
+      // First, compare by `section`
+      if (a.section !== b.section) {
+        return a.section - b.section;
+      }
+      // If `section` is the same, compare by `order`
+      return a.order - b.order;
+    });
+});
+
+const sections = computed(() => {
+  const sectionMap = new Map<number, Serving[]>();
+  servings.value.forEach((serving) => {
+    if (!sectionMap.has(serving.section)) {
+      sectionMap.set(serving.section, []);
+    }
+    sectionMap.get(serving.section)?.push(serving);
+  });
+
+  return Array.from(sectionMap.values());
+});
 </script>
 
 <template>
@@ -39,86 +55,25 @@ console.log(servings.value);
       <div class="border-b-8 border-black py-0.5 font-black">
         <div class="text-sm -mb-3">{{ $t("amount_per_serving") }}</div>
         <div class="flex justify-between items-baseline">
-          <span class="text-xl">{{ servings.Calories[key] }}</span>
-          <span class="text-3xl">{{ Math.round(servings.Calories.value) }}</span>
+          <span class="text-xl">{{ response.label.serving.Calories[key] }}</span>
+          <span class="text-3xl">{{ Math.round(response.label.serving.Calories.value) }}</span>
         </div>
       </div>
 
       <div class="text-right border-b border-black py-0.5 font-bold">{{ $t("daily_value") }}</div>
 
-      <div class="">
-        <!-- Total Fat -->
-        <div class="flex justify-between border-b border-black py-0.5 font-black">
-          <span>Total Fat <span class="font-normal">94g</span></span>
-          <span>121%</span>
-        </div>
-
-        <!-- Saturated Fat -->
-        <div class="flex justify-between border-b border-black ps-4 py-0.5">
-          <span>Saturated Fat 36g</span>
-          <span class="font-black">181%</span>
-        </div>
-
-        <!-- Trans Fat -->
-        <div class="flex justify-between border-b border-black ps-4 py-0.5 italic">
-          <span>Trans Fat 0g</span>
-          <span class="font-black not-italic">0%</span>
-        </div>
-
-        <!-- Cholesterol -->
-        <div class="flex justify-between border-b border-black py-0.5">
-          <span class="font-black">Cholesterol <span class="font-normal">35mg</span></span>
-          <span class="font-black">11%</span>
-        </div>
-
-        <!-- Sodium -->
-        <div class="flex justify-between border-b border-black py-0.5">
-          <span class="font-black">Sodium <span class="font-normal">150mg</span></span>
-          <span class="font-black">6%</span>
-        </div>
-
-        <!-- Total Carbohydrates -->
-        <div class="flex justify-between border-b border-black py-0.5">
-          <span class="font-black">Total Carbohydrates <span class="font-normal">23g</span></span>
-          <span class="font-black">8%</span>
-        </div>
-
-        <!-- Dietary Fiber -->
-        <div class="flex justify-between border-b border-black ps-4 py-0.5">
-          <span>Dietary Fiber 2g</span>
-          <span class="font-black">7%</span>
-        </div>
-
-        <!-- Total Sugars -->
-        <div class="border-b border-black ps-4 py-0.5">
-          <div class="flex justify-between border-b border-black">
-            <span>Total Sugars 18g</span>
-          </div>
-          <div class="flex justify-between ps-4 pt-0.5">
-            <span>Includes 0g Added Sugars</span>
-            <span class="font-black">0%</span>
-          </div>
-        </div>
-
-        <!-- Protein -->
-        <div class="flex justify-between border-b-8 border-black py-0.5">
-          <span class="font-black">Protein <span class="font-normal">27g</span></span>
-        </div>
-
-        <!-- Vitamins and Minerals -->
-        <div class="">
-          <div class="flex justify-between border-b border-black py-0.5">
-            <span>Vitamin D 0.3mg</span>
-            <span>2%</span>
-          </div>
-          <div class="flex justify-between border-b border-black py-0.5">
-            <span>Iron 3.6mg</span>
-            <span>20%</span>
-          </div>
-          <div class="flex justify-between border-b-8 border-black py-0.5">
-            <span>Potassium 1060mg</span>
-            <span>25%</span>
-          </div>
+      <div>
+        <div
+          class="border-b-8 border-black py-0.5"
+          v-for="(section, index) in sections"
+          :key="index"
+        >
+          <Fact
+            v-for="serving in section"
+            :key="serving.id"
+            :serving="serving"
+            :daily-value="dailyValues[serving.name]"
+          />
         </div>
       </div>
 

@@ -5,11 +5,9 @@ import Language from "./components/language/language.vue";
 
 <template>
   <div class="bg-slate-700 min-h-svh flex justify-center items-center">
-    <div class="flex justify-center gap-x-2 items-start">
+    <div class="flex flex-row rtl:flex-row-reverse justify-center gap-x-2 items-start">
       <Facts />
       <Language />
     </div>
   </div>
 </template>
-
-<style scoped></style>
