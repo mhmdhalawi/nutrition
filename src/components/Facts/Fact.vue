@@ -27,7 +27,7 @@ const handleChecked = (event: Event) => {
       class="cursor-pointer flex justify-between font-black"
       :class="{
         'ps-4 font-normal': serving.indentations === 1,
-        'ms-4 ps-4 font-normal': serving.indentations === 2,
+        'ps-8 font-normal': serving.indentations === 2,
       }"
     >
       <p>
