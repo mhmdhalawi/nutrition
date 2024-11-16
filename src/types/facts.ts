@@ -1,14 +1,9 @@
 import response from "@/data/response.json";
 
-export type Unit = {
-  id?: number;
-  name?: string;
-  name_ar?: string;
-  grams?: string;
-};
+type DailyValueKey = keyof typeof response.label.daily_value | string;
 
 export type DailyValue = {
-  [key in keyof typeof response.label.daily_value]: number;
+  [key in DailyValueKey]?: number;
 };
 
 export type Servings = {

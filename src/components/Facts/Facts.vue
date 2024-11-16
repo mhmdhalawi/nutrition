@@ -4,12 +4,12 @@ import response from "@/data/response.json";
 import useLanguageKey from "@/composables/use-language-key";
 import Fact from "./Fact.vue";
 
-import type { Serving, Key } from "@/types/facts";
+import type { Serving, Key, DailyValue } from "@/types/facts";
 
 const { key } = useLanguageKey();
 
 const amounts = computed(() => response.label.amounts);
-const dailyValues = computed(() => response.label.daily_value as any);
+const dailyValues = computed<DailyValue>(() => response.label.daily_value);
 
 const servings = computed<Serving[]>(() => {
   return Object.keys(response.label.serving)
