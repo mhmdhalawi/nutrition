@@ -16,10 +16,6 @@ const servings = computed<Serving[]>(() => {
     .map((key) => response.label.serving[key as Key])
     .filter((serving) => serving.enabled === 1 && serving.name !== "Calories")
     .sort((a, b) => {
-      // First, compare by `section`
-      if (a.section !== b.section) {
-        return a.section - b.section;
-      }
       // If `section` is the same, compare by `order`
       return a.order - b.order;
     });

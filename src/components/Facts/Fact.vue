@@ -7,7 +7,7 @@ import useLanguageKey from "@/composables/use-language-key";
 const { key } = useLanguageKey();
 
 defineProps<{
-  dailyValue: number;
+  dailyValue?: number;
   serving: Serving;
 }>();
 

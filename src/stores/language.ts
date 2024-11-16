@@ -8,11 +8,13 @@ export const useLanguageStore = defineStore("language", () => {
   const languages = ref([
     {
       code: "en",
+      name: "language_en",
       dir: "ltr",
       font: "font-sans",
     },
     {
       code: "ar",
+      name: "language_ar",
       dir: "rtl",
       font: "font-arabic",
     },
@@ -24,20 +26,21 @@ export const useLanguageStore = defineStore("language", () => {
     return language;
   });
 
-  const language = ref(getLanguage.value.code);
+  const language = ref(getLanguage.value);
 
-  function setLanguage(language: string) {
-    const lang = languages.value.find((lang) => lang.code === language) || languages.value[0];
-    document.documentElement.lang = lang.code;
-    document.documentElement.dir = lang.dir;
-    document.body.className = lang.font;
-    localStorage.setItem("language", lang.code);
-    locale.value = lang.code;
+  function setLanguage(code: string) {
+    language.value = languages.value.find((lang) => lang.code === code) || languages.value[0];
+    document.documentElement.lang = language.value.code;
+    document.documentElement.dir = language.value.dir;
+    document.body.className = language.value.font;
+    localStorage.setItem("language", language.value.code);
+    locale.value = language.value.code;
   }
 
   return {
     language,
     languages,
     setLanguage,
+    getLanguage,
   };
 });
