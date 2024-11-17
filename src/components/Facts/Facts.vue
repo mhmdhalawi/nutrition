@@ -12,25 +12,19 @@ const amounts = computed(() => response.label.amounts);
 const dailyValues = computed<DailyValue>(() => response.label.daily_value);
 
 const servings = computed<Serving[]>(() => {
-  return Object.keys(response.label.serving)
-    .map((key) => response.label.serving[key as Key])
+  return Object.values(response.label.serving)
     .filter((serving) => serving.enabled === 1 && serving.name !== "Calories")
-    .sort((a, b) => {
-      // If `section` is the same, compare by `order`
-      return a.order - b.order;
-    });
+    .sort((a, b) => a.order - b.order);
 });
 
 const sections = computed(() => {
-  const sectionMap = new Map<number, Serving[]>();
-  servings.value.forEach((serving) => {
-    if (!sectionMap.has(serving.section)) {
-      sectionMap.set(serving.section, []);
-    }
-    sectionMap.get(serving.section)?.push(serving);
-  });
+  const sectionsObject = servings.value.reduce((acc, serving) => {
+    const { section } = serving;
+    acc[section] = (acc[section] || []).concat(serving);
+    return acc;
+  }, {} as Record<number, Serving[]>);
 
-  return Array.from(sectionMap.values());
+  return Object.values(sectionsObject); // Convert to array of arrays
 });
 </script>
 
